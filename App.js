@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, View,TextInput,ScrollView } from 'react-native';
+import { StyleSheet, Text, View,TextInput,ScrollView,Image,TouchableHighlight,Modal } from 'react-native';
 
 
 export default function App() {
@@ -19,9 +19,19 @@ export default function App() {
       })
     })
   }
+
+  const openPopup = id => {
+    axios(apiurl + "&i=" + id).then(({data}) => {
+
+    setState(prevState => {
+      return {...prevState, selected:result}
+    });
+
+  });
+}
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Movie Database</Text>
+      <Text style={styles.title}>Filmler</Text>
       <TextInput
         style={styles.searchbox}
         value={state.s}
@@ -32,11 +42,35 @@ export default function App() {
       />
       <ScrollView style = { styles.results}>
         {state.results.map(result => (
-          <View key={ result.imdbID} style={styles.results}>
-            <Text style = { styles.heading}>{result.Tite}</Text>
+          <TouchableHighlight 
+          key={ result.imdbID} 
+          onPress={() => openPopup(result.imdbID)}>
+          <View  style={styles.results}>
+            <Image
+              source={{uri: result.Poster}}
+              style={{
+                width:'100%',
+                height:300
+              }}
+              resizeMode= "cover"
+            />
+            <Text style = { styles.heading}>{result.Title}</Text>
           </View>
+          </TouchableHighlight>
         ))}
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={false}
+        visible={(typeof state.selected.Title != "undefined")}
+      >
+        <View style={styles.popup }>
+          <Text style={styles.poptitle}>{state.selected.Title}</Text>
+          <Text style={{marginBottom:20}}> Rating:{state.selected.imdbRating}</Text>
+        </View>
+        
+      </Modal>
     </View>
   );
 }
